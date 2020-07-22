@@ -24,6 +24,19 @@
                            (insert (node-right tree) value))])
         tree)))
 
+(define (contains? tree value)
+  (if (null? tree)
+      #false
+      (let ([x (node-data tree)])
+        (cond
+          [(= value x) #true]
+          [(< value x) (if (null? (node-left tree))
+                           #false
+                           (contains? (node-left tree) value))]
+          [(> value x) (if (null? (node-right tree))
+                           #false
+                           (contains? (node-right tree) value))]))))
+
 (define (inorder tree)
   (cond
     [(null? tree) ""]
@@ -34,9 +47,21 @@
            " "
            (inorder (node-right tree)))]))
 
+(define (find-min tree)
+  (if (null? tree)
+      null
+      (cond
+        [(null? (node-left tree)) (node-data tree)]
+        [else (find-min (node-left tree))])))
+
+(define (height tree)
+  (if (null? tree)
+      -1
+      (+ 1 (max (height (node-left tree)) (height (node-right tree))))))
+
 (define root (node 5 null null))
-root
 (insert root 3)
 (insert root 7)
 (insert root 6)
-(inorder root)
+
+
