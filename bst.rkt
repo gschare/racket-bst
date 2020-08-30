@@ -13,13 +13,13 @@
 (define (insert tree value)
   (if (null? tree)
       (node value null null)
-      (let ([x (node-data tree)])
+      (let ([current (node-data tree)])
         (cond
-          [(= value x) tree]
-          [(< value x) (if (null? (node-left tree))
+          [(= value current) tree]
+          [(< value current) (if (null? (node-left tree))
                            (set-node-left! tree (node value null null))
                            (insert (node-left tree) value))]
-          [(> value x) (if (null? (node-right tree))
+          [(> value current) (if (null? (node-right tree))
                            (set-node-right! tree (node value null null))
                            (insert (node-right tree) value))])
         tree)))
@@ -36,11 +36,11 @@
 (define (contains? tree value)
   (if (null? tree)
       #false
-      (let ([x (node-data tree)])
+      (let ([current (node-data tree)])
         (cond
-          [(= value x) #true]
-          [(< value x) (contains? (node-left tree) value)]
-          [(> value x) (contains? (node-right tree) value)]))))
+          [(= value current) #true]
+          [(< value current) (contains? (node-left tree) value)]
+          [(> value current) (contains? (node-right tree) value)]))))
 
 ; inorder : BT -> List-of-Numbers
 ; return every value of the tree in value-sorted order (inorder traversal)
