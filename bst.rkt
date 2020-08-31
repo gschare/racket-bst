@@ -8,6 +8,48 @@
 ; a binary search tree (BST) is a BT with the property that the data of the node to the left and
 ; to the right are less than and greater than the current node's data, respectively
 
+; maximum difference in heights allowed in each subtree
+(define MAX-IMBALANCE 1)
+
+; balance : BT -> BT
+; balances the tree using AVL
+(define (balance tree)
+  (cond
+    [(null? tree) tree]
+    [(> (- (height (node-left tree)) (height (node-right tree))) MAX-IMBALANCE)
+     (cond
+       [(>= (height (node-left (node-left tree))) (height (node-right (node-left tree))))
+        (rotate-with-left tree)]
+       [else (double-rotate-with-left tree)])]
+    [(> (- (height (node-right tree)) (height (node-left tree))) MAX-IMBALANCE)
+     (cond
+       [(>= (height (node-right (node-right tree))) (height (node-left (node-right tree))))
+        (rotate-with-right tree)]
+       [else (double-rotate-with-right tree)])]
+    [else tree]))
+
+; rotate-with-left : BT -> BT
+(define (rotate-with-left tree)
+   (node (node-data (node-left tree))
+          (node-left (node-left tree))
+          (node (node-data tree) (node-right (node-left tree)) (node-right tree))))
+
+; rotate-with-right : BT -> BT
+(define (rotate-with-right tree)
+  (node (node-data (node-right tree))
+        (node (node-data tree) (node-left tree) (node-left (node-right tree)))
+        (node-right (node-right tree))))
+
+; double-rotate-with-left : BT -> BT
+(define (double-rotate-with-left tree)
+  (set-node-left! tree (rotate-with-right (node-left tree)))
+  (rotate-with-left tree))
+
+; double-rotate-with-right : BT -> BT
+(define (double-rotate-with-right tree)
+  (set-node-right! tree (rotate-with-left (node-right tree)))
+  (rotate-with-right tree))
+
 ; insert : BT Number -> BT
 ; updates tree with the insertion of value at appropriate location and returns it
 (define (insert tree value)
@@ -22,7 +64,7 @@
           [(> value current) (if (null? (node-right tree))
                            (set-node-right! tree (node value null null))
                            (insert (node-right tree) value))])
-        tree)))
+        (balance tree))))
 
 ; insert-list : BT List-of-Numbers -> BT
 ; repeatedly insert a list of numbers into the tree in the order they're provided
@@ -73,17 +115,44 @@
 ; height : BT -> Number
 ; return the height of the tree
 (define (height tree)
-  (if (null? tree)
-      -1
-      (+ 1 (max (height (node-left tree)) (height (node-right tree))))))
+  (cond
+    [(null? tree) -1]
+    [else (+ 1 (max (height (node-left tree)) (height (node-right tree))))]))
 
-; driver
-(define n 100) ; max number for random values
-; generate a tree of a random root and 10 random numbers between 0 and n
-(define mytree (insert-list (node (random n) null null) (map (λ (_) (random n)) (range 0 10 1))))
-; print the tree as-is
-mytree
-; print the tree inorder
-(inorder mytree)
+; height-tr : BT -> Number
+; return the height of the tree
+; uses tail recursion
+(define (height-tr tree)
+  (define (recurse tree depth)
+    (cond
+    [(null? tree) depth]
+    [else (max
+           (recurse (node-left tree) (add1 depth))
+           (recurse (node-right tree) (add1 depth)))]))
+  (recurse tree -1))
 
+; tester
 
+; generate a tree of n random numbers between 0 and 100n (for uniqueness w.h.p.)
+(define n 20) ; how many random numbers to create
+(define rand-list (build-list n (λ (_) (random (* 100 n)))))
+(define mytree (insert-list null rand-list))
+
+mytree ; print the tree as-is
+(inorder mytree) ; print the tree inorder
+
+(define (unique list)
+  (define (recurse list list-so-far)
+    (cond
+      [(null? list) list-so-far]
+      [(not (member (first list) list-so-far))
+       (recurse (rest list) (cons (first list) list-so-far))]
+      [else
+       (recurse (rest list) list-so-far)]))
+  (recurse list empty))
+
+(define (unique? list)
+  (= (length list) (length (unique list))))
+
+(unique? rand-list) ; display whether or not the random numbers generated were all unique
+                    ; this should be true with high probability
