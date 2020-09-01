@@ -50,28 +50,20 @@
   (set-node-right! tree (rotate-with-left (node-right tree)))
   (rotate-with-right tree))
 
-; insert : BT Number -> BT
+; insert : Number BT -> BT
 ; updates tree with the insertion of value at appropriate location and returns it
-(define (insert tree value)
-  (if (null? tree)
-      (node value null null)
-      (let ([current (node-data tree)])
-        (cond
-          [(= value current) tree]
-          [(< value current) (if (null? (node-left tree))
-                           (set-node-left! tree (node value null null))
-                           (insert (node-left tree) value))]
-          [(> value current) (if (null? (node-right tree))
-                           (set-node-right! tree (node value null null))
-                           (insert (node-right tree) value))])
-        (balance tree))))
-
-; insert-list : BT List-of-Numbers -> BT
-; repeatedly insert a list of numbers into the tree in the order they're provided
-(define (insert-list tree alon)
-  (cond
-    [(null? alon) tree]
-    [else (insert-list (insert tree (first alon)) (rest alon))]))
+(define (insert value tree)
+  (define (insert-helper value tree)
+    (if (null? tree)
+        (node value null null)
+        (let ([current (node-data tree)]
+              [left (node-left tree)]
+              [right (node-right tree)])
+          (cond
+            [(= value current) tree]
+            [(< value current) (node current (insert-helper value left) right)]
+            [(> value current) (node current left (insert-helper value right))]))))
+  (balance (insert-helper value tree)))
 
 ; contains : BT Number -> Boolean
 ; checks if the tree contains a particular value
@@ -136,7 +128,7 @@
 ; generate a tree of n random numbers between 0 and 100n (for uniqueness w.h.p.)
 (define n 20) ; how many random numbers to create
 (define rand-list (build-list n (λ (_) (random (* 100 n)))))
-(define mytree (insert-list null rand-list))
+(define mytree (foldr insert null rand-list))
 
 mytree ; print the tree as-is
 (inorder mytree) ; print the tree inorder
