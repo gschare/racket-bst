@@ -53,17 +53,15 @@
 ; insert : Number BT -> BT
 ; updates tree with the insertion of value at appropriate location and returns it
 (define (insert value tree)
-  (define (insert-helper value tree)
-    (if (null? tree)
-        (node value null null)
-        (let ([current (node-data tree)]
-              [left (node-left tree)]
-              [right (node-right tree)])
-          (cond
-            [(= value current) tree]
-            [(< value current) (node current (insert-helper value left) right)]
-            [(> value current) (node current left (insert-helper value right))]))))
-  (balance (insert-helper value tree)))
+  (if (null? tree)
+      (node value null null)
+      (let ([current (node-data tree)]
+            [left (node-left tree)]
+            [right (node-right tree)])
+        (cond
+          [(= value current) tree]
+          [(< value current) (balance (node current (insert value left) right))]
+          [(> value current) (balance (node current left (insert value right)))]))))
 
 ; contains : BT Number -> Boolean
 ; checks if the tree contains a particular value
