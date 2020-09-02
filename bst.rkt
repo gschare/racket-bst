@@ -42,13 +42,23 @@
 
 ; double-rotate-with-left : BT -> BT
 (define (double-rotate-with-left tree)
-  (set-node-left! tree (rotate-with-right (node-left tree)))
-  (rotate-with-left tree))
+  (cond
+    [(null? tree) null] ; should never happen but just in case
+    [else
+     (rotate-with-left (node
+                        (node-data tree)
+                        (rotate-with-right (node-left tree))
+                        (node-right tree)))]))
 
 ; double-rotate-with-right : BT -> BT
 (define (double-rotate-with-right tree)
-  (set-node-right! tree (rotate-with-left (node-right tree)))
-  (rotate-with-right tree))
+  (cond
+    [(null? tree) null] ; should never happen but just in case
+    [else
+     (rotate-with-right (node
+                        (node-data tree)
+                        (node-left tree)
+                        (rotate-with-left (node-right tree))))]))
 
 ; insert : Number BT -> BT
 ; updates tree with the insertion of value at appropriate location and returns it
